@@ -6,9 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.skilldistillery.filmquery.entities.Actor;
 import com.skilldistillery.filmquery.entities.Film;
+import com.skilldistillery.filmquery.entities.Language;
 
 public class DatabaseAccessorObject implements DatabaseAccessor {
 
@@ -26,7 +28,6 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setInt(1, filmId);
       ResultSet rs = stmt.executeQuery();
-
       if (rs.next()) {
         film = new Film();
         film.setId(rs.getInt(1));
@@ -40,12 +41,14 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
         film.setReplacementCost(rs.getDouble(9));
         film.setRating(rs.getString(10));
         film.setSpecialFeatures(rs.getString(11));
+        film.setLanguage(getLanguageByFilmId(rs.getInt(5)));
         film.setActors(getActorsByFilmId(filmId));
-        
+      } else {
+        System.out.println("Sorry, no film(s) were found with that criteria.");
+        return null;
       }
-
     } catch (SQLException e) {
-      System.err.println("On the internet no one knows you're a dog.");
+      System.err.println("On the internet, no one knows you're a dog.");
       e.printStackTrace();
     }
     return film;
@@ -79,7 +82,7 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
       }
 
     } catch (SQLException e) {
-      System.err.println("On the internet no one knows you're a dog.");
+      System.err.println("On the internet, no one knows you're a dog.");
       e.printStackTrace();
     }
     return actor;
@@ -110,6 +113,78 @@ public class DatabaseAccessorObject implements DatabaseAccessor {
       e.printStackTrace();
     }
     return cast;
+
+  }
+
+  @Override
+  public List<Film> getFilmByKeyword(String filmKeyword) {
+    List<Film> films = new ArrayList<>();
+
+    try {
+      Connection conn = DriverManager.getConnection(URL, user, pass);
+      String sql = "SELECT id, title, description, release_year, language_id, rental_duration, rental_rate, "
+          + "length, replacement_cost, rating, special_features FROM film WHERE title LIKE ? OR description LIKE ?";
+      PreparedStatement stmt = conn.prepareStatement(sql);
+      stmt.setString(1, "%" + filmKeyword + "%");
+      stmt.setString(2, "%" + filmKeyword + "%");
+      ResultSet rs = stmt.executeQuery();
+      while (rs.next()) {
+        Film film = new Film();
+        film.setId(rs.getInt(1));
+        film.setTitle(rs.getString(2));
+        film.setDescription(rs.getString(3));
+        film.setYear(rs.getInt(4));
+        film.setLanguageID(rs.getInt(5));
+        film.setRentalDuration(rs.getInt(6));
+        film.setRentalRate(rs.getDouble(7));
+        film.setFilmLength(rs.getInt(8));
+        film.setReplacementCost(rs.getDouble(9));
+        film.setRating(rs.getString(10));
+        film.setSpecialFeatures(rs.getString(11));
+        film.setActors(getActorsByFilmId(rs.getInt(1)));
+        film.setLanguage(getLanguageByFilmId(rs.getInt(5)));
+        films.add(film);
+
+      }
+      if (films.size() == 0) {
+        System.out.println("Sorry, no film(s) were found with that criteria.");
+        return null;
+      }
+      rs.close();
+      stmt.close();
+      conn.close();
+
+    } catch (SQLException e) {
+      System.err.println("On the internet, no one knows you're a dog.");
+      e.printStackTrace();
+    }
+    return films;
+
+  }
+
+  @Override
+  public Language getLanguageByFilmId(int filmLangId) {
+    Language lang = null;
+
+    try {
+      Connection conn = DriverManager.getConnection(URL, user, pass);
+      String sql = "SELECT id, name FROM language WHERE id = ? ";
+      PreparedStatement stmt = conn.prepareStatement(sql);
+      stmt.setInt(1, filmLangId);
+      ResultSet rs = stmt.executeQuery();
+
+      if (rs.next()) {
+        lang = new Language();
+        lang.setId(rs.getInt(1));
+        lang.setName(rs.getString(2));
+
+      }
+
+    } catch (SQLException e) {
+      System.err.println("On the internet, no one knows you're a dog.");
+      e.printStackTrace();
+    }
+    return lang;
 
   }
 

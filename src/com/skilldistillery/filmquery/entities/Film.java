@@ -9,6 +9,7 @@ public class Film {
   private String description;
   private int year;
   private int languageID;
+  private Language language;
   private int rentalDuration;
   private double rentalRate;
   private int filmLength;
@@ -16,8 +17,16 @@ public class Film {
   private String rating;
   private String specialFeatures;
   private ArrayList<Actor> actors;
-  
-  
+
+
+
+  public Language getLanguage() {
+    return language;
+  }
+
+  public void setLanguage(Language language) {
+    this.language = language;
+  }
 
   public ArrayList<Actor> getActors() {
     return actors;

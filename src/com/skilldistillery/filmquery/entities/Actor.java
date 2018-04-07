@@ -42,7 +42,7 @@ public class Actor {
 
   @Override
   public String toString() {
-    return "id=" + id + " |firstName=" + firstName + " |lastName=" + lastName;
+    return "id=" + id + " \n|firstName=" + firstName + " |lastName=" + lastName;
   }
 
   @Override
